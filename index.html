@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>사업가의 사자성어</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* 레이아웃: 한 장씩 뽑아 보는 '카드' + 아래 전체 목록. 청자빛 바탕, 먹색 글씨, 인주색 낙관을 포인트로. */
+:root {
+  --bg: #e9efec;
+  --paper: #f7faf8;
+  --ink: #1d2a28;
+  --ink-soft: #4f5f5b;
+  --line: #c9d6d1;
+  --seal: #b2382c;
+  --seal-ink: #fff6f2;
+  --jade: #2f6b60;
+  --jade-tint: #d6e5df;
+  --font-hanja: "Noto Serif KR", "Noto Serif CJK KR", "Source Han Serif K", "Batang", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111817; --paper: #18211f; --ink: #e6ede9; --ink-soft: #9fb0aa; --line: #2c3a37;
+    --seal: #d65a4a; --seal-ink: #1a0f0d; --jade: #7cc2b2; --jade-tint: #1f3430; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111817; --paper: #18211f; --ink: #e6ede9; --ink-soft: #9fb0aa; --line: #2c3a37;
+  --seal: #d65a4a; --seal-ink: #1a0f0d; --jade: #7cc2b2; --jade-tint: #1f3430; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.7;
+  padding: 0 16px 48px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--jade); outline-offset: 2px; }
+
+header.top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 28px; }
+.brand h1 { font-family: var(--font-hanja); font-weight: 900; font-size: clamp(1.6rem, 5vw, 2.1rem); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.brand p { margin: 2px 0 0; color: var(--ink-soft); font-size: 0.9rem; }
+.progress { font-size: 0.85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; text-align: right; }
+.progress b { color: var(--ink); font-weight: 600; }
+.bar { width: 160px; height: 4px; background: var(--line); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--jade); width: 0; transition: width .3s; }
+
+.filters { display: flex; flex-direction: column; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--line); background: transparent; border-radius: 999px;
+  padding: 4px 12px; font-size: 0.85rem; color: var(--ink-soft);
+}
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip .n { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 3px; font-size: .78rem; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.search { flex: 1 1 220px; min-width: 0; border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 8px 12px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--ink-soft); user-select: none; }
+.toggle input { accent-color: var(--jade); width: 16px; height: 16px; }
+
+/* 뽑기 영역 */
+.draw { display: flex; gap: 10px; align-items: stretch; }
+.btn-draw {
+  flex: 1; border: 0; border-radius: 12px; background: var(--seal); color: var(--seal-ink);
+  font-family: var(--font-hanja); font-weight: 700; font-size: 1.2rem; padding: 16px 20px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--seal) 60%, black);
+  transition: transform .08s;
+}
+.btn-draw:active { transform: translateY(2px); box-shadow: none; }
+.btn-draw small { font-family: var(--font-body); font-weight: 500; font-size: .8rem; opacity: .85; }
+.btn-step { border: 1px solid var(--line); background: var(--paper); border-radius: 12px; width: 56px; font-size: 1.2rem; color: var(--ink-soft); }
+
+.card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+  padding: clamp(18px, 4vw, 32px); display: flex; flex-direction: column; gap: 22px;
+  position: relative;
+}
+.card.flip { animation: flip .38s ease; }
+@keyframes flip { from { opacity: .2; transform: translateY(8px) rotateX(8deg); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card.flip { animation: none; } .bar i { transition: none; } }
+.meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: .82rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.seal {
+  display: inline-grid; place-items: center; background: var(--seal); color: var(--seal-ink);
+  font-family: var(--font-hanja); font-weight: 700; font-size: .78rem; line-height: 1.15;
+  padding: 5px 8px; border-radius: 3px; letter-spacing: 0;
+}
+
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(6px, 2vw, 14px); }
+.tile {
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px 4px 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; min-width: 0;
+  background: var(--paper);
+}
+.tile .h { font-family: var(--font-hanja); font-weight: 900; font-size: clamp(2.2rem, 11vw, 4rem); line-height: 1.1; }
+.tile .r { font-size: clamp(.72rem, 2.6vw, .9rem); color: var(--ink-soft); word-break: keep-all; line-height: 1.35; }
+.tile .r b { color: var(--ink); font-weight: 600; }
+
+.reading { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.reading .ko { font-family: var(--font-hanja); font-weight: 700; font-size: clamp(1.6rem, 6vw, 2.2rem); letter-spacing: .18em; }
+.reading .mean { font-size: 1.05rem; font-weight: 500; flex: 1 1 240px; min-width: 0; }
+
+.sec { display: flex; flex-direction: column; gap: 6px; }
+.sec h3 { margin: 0; font-size: .78rem; letter-spacing: .12em; color: var(--jade); font-weight: 600; }
+.sec p { margin: 0; max-width: 65ch; word-break: keep-all; }
+.sec.biz { background: var(--jade-tint); border-radius: 10px; padding: 14px 16px; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 8px 14px; font-size: .9rem; }
+.btn[aria-pressed="true"] { background: var(--jade); border-color: var(--jade); color: var(--paper); }
+
+/* 퀴즈 모드: 한자만 보이고 나머지는 가림 */
+.card.quiz.hidden .tile .r, .card.quiz.hidden .hideable { visibility: hidden; }
+.reveal { display: none; }
+.card.quiz.hidden .reveal { display: block; position: absolute; left: 50%; transform: translateX(-50%); bottom: 50%; }
+.reveal button { border: 0; background: var(--ink); color: var(--paper); border-radius: 999px; padding: 10px 22px; font-weight: 600; }
+
+/* 전체 목록 */
+.list-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; border-top: 1px solid var(--line); padding-top: 18px; }
+.list-head h2 { margin: 0; font-family: var(--font-hanja); font-size: 1.2rem; }
+.list-head span { font-size: .85rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.item {
+  border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 8px 10px; text-align: left;
+  display: flex; flex-direction: column; gap: 0; min-width: 0;
+}
+.item .hj { font-family: var(--font-hanja); font-weight: 700; font-size: 1.05rem; }
+.item .ko { font-size: .8rem; color: var(--ink-soft); }
+.item.done { opacity: .55; }
+.item.done .ko::after { content: " · 외움"; color: var(--jade); }
+.item.cur { border-color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); }
+.empty { color: var(--ink-soft); font-size: .9rem; padding: 12px 0; }
+footer { color: var(--ink-soft); font-size: .78rem; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>사업가의 사자성어</h1>
+      <p>경영·협상·투자 현장에서 쓰는 사자성어 <span id="total">500</span>선</p>
+    </div>
+    <div class="progress">
+      외운 사자성어 <b id="doneCount">0</b> / <span id="doneTotal">0</span>
+      <div class="bar"><i id="doneBar"></i></div>
+    </div>
+  </header>
+
+  <section class="filters" aria-label="분류와 검색">
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <input class="search" id="q" type="search" placeholder="한글·한자·뜻으로 찾기 (예: 신뢰, 漁, 협상)" autocomplete="off">
+      <label class="toggle"><input type="checkbox" id="onlyNew"> 안 외운 것만</label>
+      <label class="toggle"><input type="checkbox" id="quiz"> 퀴즈 모드</label>
+    </div>
+  </section>
+
+  <div class="draw">
+    <button class="btn-step" id="prev" aria-label="이전 사자성어">‹</button>
+    <button class="btn-draw" id="draw">사자성어 뽑기 <small id="poolInfo"></small></button>
+    <button class="btn-step" id="next" aria-label="다음 사자성어">›</button>
+  </div>
+
+  <article class="card" id="card" aria-live="polite">
+    <div class="meta"><span id="no">No. 001</span><span class="seal" id="cat">전략</span></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="reading hideable"><span class="ko" id="ko"></span><span class="mean" id="mean"></span></div>
+    <div class="sec hideable"><h3>이야기</h3><p id="story"></p></div>
+    <div class="sec biz hideable"><h3>실무에서는</h3><p id="biz"></p></div>
+    <div class="actions">
+      <button class="btn" id="learn" aria-pressed="false">외웠어요</button>
+      <button class="btn" id="copy">글귀 복사</button>
+    </div>
+    <div class="reveal"><button id="revealBtn">정답 보기</button></div>
+  </article>
+
+  <section>
+    <div class="list-head"><h2>전체 목록</h2><span id="listCount"></span></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <footer>뜻과 이야기는 학습용으로 정리한 내용입니다. 출전은 대표적인 설을 따랐습니다.</footer>
+</div>
+
+<script src="data/01.js"></script>
+<script src="data/02.js"></script>
+<script src="data/03.js"></script>
+<script src="data/04.js"></script>
+<script src="data/05.js"></script>
+<script src="data/06.js"></script>
+<script src="data/07.js"></script>
+<script src="data/08.js"></script>
+<script src="data/09.js"></script>
+<script src="data/10.js"></script>
+<script src="data/11.js"></script>
+<script>
+(function () {
+  const CATS = { L: '리더십·조직', S: '전략·경쟁', R: '위기·리스크', P: '사람·관계', T: '신뢰·원칙', G: '성장·끈기', C: '기회·흐름', J: '판단·통찰' };
+  const SEAL = { L: '統率', S: '兵法', R: '危機', P: '人和', T: '信義', G: '精進', C: '時運', J: '明察' };
+  const all = (window.IDIOMS || []).map((e, i) => ({
+    id: i, ko: e[0], hj: e[1], ch: e[2].split('|'), mean: e[3], story: e[4], biz: e[5], cat: e[6]
+  }));
+  const $ = id => document.getElementById(id);
+
+  const store = {
+    get() { try { return new Set(JSON.parse(localStorage.getItem('saja-learned') || '[]')); } catch (_) { return new Set(); } },
+    set(s) { try { localStorage.setItem('saja-learned', JSON.stringify([...s])); } catch (_) {} }
+  };
+  let learned = store.get();
+  let cat = 'all', query = '', onlyNew = false, cur = 0;
+
+  function pool() {
+    const q = query.trim().toLowerCase();
+    return all.filter(x =>
+      (cat === 'all' || x.cat === cat) &&
+      (!onlyNew || !learned.has(x.ko)) &&
+      (!q || x.ko.includes(q) || x.hj.includes(q) || x.mean.includes(q) || x.story.includes(q) || x.biz.includes(q) || x.ch.join(' ').includes(q))
+    );
+  }
+
+  function renderChips() {
+    const counts = {}; all.forEach(x => counts[x.cat] = (counts[x.cat] || 0) + 1);
+    const list = [['all', '전체', all.length]].concat(Object.keys(CATS).map(k => [k, CATS[k], counts[k] || 0]));
+    $('chips').innerHTML = list.map(([k, name, n]) =>
+      `<button class="chip" data-cat="${k}" aria-pressed="${k === cat}">${name}<span class="n">${n}</span></button>`).join('');
+  }
+
+  function show(id, animate) {
+    const x = all[id]; if (!x) return;
+    cur = id;
+    const card = $('card');
+    $('no').textContent = 'No. ' + String(id + 1).padStart(3, '0');
+    $('cat').textContent = SEAL[x.cat]; $('cat').title = CATS[x.cat];
+    $('tiles').innerHTML = [...x.hj].map((h, i) => {
+      const r = (x.ch[i] || '').trim(); const sp = r.lastIndexOf(' ');
+      const hun = sp > 0 ? r.slice(0, sp) : r, eum = sp > 0 ? r.slice(sp + 1) : '';
+      return `<div class="tile"><span class="h" lang="zh-Hant">${h}</span><span class="r">${hun} <b>${eum}</b></span></div>`;
+    }).join('');
+    $('ko').textContent = x.ko; $('mean').textContent = x.mean;
+    $('story').textContent = x.story; $('biz').textContent = x.biz;
+    const isDone = learned.has(x.ko);
+    $('learn').setAttribute('aria-pressed', isDone); $('learn').textContent = isDone ? '외웠어요 ✓' : '외웠어요';
+    card.classList.toggle('hidden', $('quiz').checked);
+    if (animate) { card.classList.remove('flip'); void card.offsetWidth; card.classList.add('flip'); }
+    document.querySelectorAll('.item.cur').forEach(el => el.classList.remove('cur'));
+    const el = document.querySelector(`.item[data-id="${id}"]`); if (el) el.classList.add('cur');
+    try { history.replaceState(null, '', '#n' + (id + 1)); } catch (_) {}
+  }
+
+  function draw() {
+    const p = pool(); if (!p.length) return;
+    let pick = p[Math.floor(Math.random() * p.length)];
+    if (p.length > 1) { let guard = 0; while (pick.id === cur && guard++ < 10) pick = p[Math.floor(Math.random() * p.length)]; }
+    show(pick.id, true);
+  }
+
+  function step(d) {
+    const p = pool(); if (!p.length) return;
+    let i = p.findIndex(x => x.id === cur);
+    i = i < 0 ? 0 : (i + d + p.length) % p.length;
+    show(p[i].id, true);
+  }
+
+  function renderList() {
+    const p = pool();
+    $('poolInfo').textContent = p.length === all.length ? '' : `${p.length}개 중`;
+    $('listCount').textContent = `${p.length}개`;
+    $('grid').innerHTML = p.length ? p.map(x =>
+      `<button class="item${learned.has(x.ko) ? ' done' : ''}${x.id === cur ? ' cur' : ''}" data-id="${x.id}"><span class="hj" lang="zh-Hant">${x.hj}</span><span class="ko">${x.ko}</span></button>`
+    ).join('') : '<p class="empty">조건에 맞는 사자성어가 없습니다. 검색어나 분류를 바꿔 보세요.</p>';
+    $('draw').disabled = !p.length;
+  }
+
+  function renderProgress() {
+    const n = all.filter(x => learned.has(x.ko)).length;
+    $('doneCount').textContent = n; $('doneTotal').textContent = all.length;
+    $('doneBar').style.width = (all.length ? n / all.length * 100 : 0) + '%';
+  }
+
+  // 이벤트
+  $('chips').addEventListener('click', e => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    cat = b.dataset.cat; renderChips(); renderList();
+  });
+  $('q').addEventListener('input', e => { query = e.target.value; renderList(); });
+  $('onlyNew').addEventListener('change', e => { onlyNew = e.target.checked; renderList(); });
+  $('quiz').addEventListener('change', e => { $('card').classList.toggle('quiz', e.target.checked); $('card').classList.toggle('hidden', e.target.checked); });
+  $('revealBtn').addEventListener('click', () => $('card').classList.remove('hidden'));
+  $('draw').addEventListener('click', draw);
+  $('prev').addEventListener('click', () => step(-1));
+  $('next').addEventListener('click', () => step(1));
+  $('grid').addEventListener('click', e => {
+    const b = e.target.closest('.item'); if (!b) return;
+    show(+b.dataset.id, true);
+    $('card').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  });
+  $('learn').addEventListener('click', () => {
+    const x = all[cur];
+    learned.has(x.ko) ? learned.delete(x.ko) : learned.add(x.ko);
+    store.set(learned); show(cur, false); renderList(); renderProgress();
+  });
+  $('copy').addEventListener('click', async () => {
+    const x = all[cur];
+    const text = `${x.ko}(${x.hj})\n${x.mean}\n\n${x.story}\n\n${x.biz}`;
+    const btn = $('copy');
+    try { await navigator.clipboard.writeText(text); btn.textContent = '복사됨'; }
+    catch (_) { btn.textContent = '복사 안 됨'; }
+    setTimeout(() => btn.textContent = '글귀 복사', 1500);
+  });
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === ' ' || e.key === 'Enter') { if (e.target === document.body) { e.preventDefault(); draw(); } }
+    if (e.key === 'ArrowRight') step(1);
+    if (e.key === 'ArrowLeft') step(-1);
+  });
+
+  // 시작
+  $('total').textContent = all.length;
+  renderChips(); renderProgress(); renderList();
+  const m = /^#n(\d+)$/.exec(location.hash);
+  const start = m && all[+m[1] - 1] ? +m[1] - 1 : Math.floor(Math.random() * all.length);
+  show(start, false);
+})();
+</script>
+</body>
+</html>
